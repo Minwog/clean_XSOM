@@ -178,7 +178,7 @@ void def_sequence_retro(xsom::setup::Sequencer& seq,  State& map1,  State& map2,
     seq.__fed();
 
     seq.__def("learn_loop");
-    seq.__for(50);
+    seq.__for(40);
       seq.__call("learn_batch");
       seq.__step([&res,&iterations](){
         compute_mean_error(std::ref(res), iterations);
@@ -195,9 +195,10 @@ void def_sequence_retro(xsom::setup::Sequencer& seq,  State& map1,  State& map2,
             save_res_csv(std::ref(res), std::ref(file_res));
           });
           seq.__plot_pdf([&flags](){return flags;}, figure_prefix );
+	  //seq.__step([&seq](){seq.msg_info("saving image");});
           seq.__step([](){
             throw xsom::instr::Exit();
-          });
+	    });
   /* */ seq.__pool();
 }
 
