@@ -26,7 +26,7 @@ double c_match(const Pos& local, const CWeight& w, const Pos& p) {return xsom::g
 
 double m_dist(const Pos& w1,const Pos& w2) {return euclidian(w1,w2);}
 
-double h(const Pos& bmu,const Pos& p) {return xsom::linear(p, bmu, H_RADIUS, m_dist);}
+double h(const Params& params, const Pos& bmu,const Pos& p) {return xsom::linear(p, bmu, params.h_radius, m_dist);}
 
 double merge(const float& beta, const Acts& thal, const Acts& cort, const Pos& p) {
   double t = thal(p);

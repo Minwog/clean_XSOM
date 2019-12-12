@@ -35,7 +35,26 @@ using namespace std::placeholders;
 #define C_MATCH_SIGMA_2 ((C_MATCH_SIGMA)*(C_MATCH_SIGMA))
 #define MEM_SIZE 500
 #define VIT_OUT 0.002
+#define H_RADIUS_MAX .07
+#define H_RADIUS_MIN .01
+#define ALPHA_MIN .05
+#define ALPHA_MAX .3
+#define N_IT 1000
 
+class Params{
+public:
+
+  double beta = BETA;
+  double t_match_sigma_2 = T_MATCH_SIGMA_2;
+  double c_match_sigma_2 = C_MATCH_SIGMA_2;
+  double h_radius = H_RADIUS_MAX;
+  double mean_error = 1;
+
+  double _alpha(int& iteration) const { return ALPHA_MAX - iteration * (ALPHA_MAX - ALPHA_MIN)/N_IT; };
+  double _t_match_sigma_2() const { return T_MATCH_SIGMA_2;};
+  double _c_match_sigma_2() const { return C_MATCH_SIGMA_2;};
+  double _h_radius(int& iteration) const{ return H_RADIUS_MAX - iteration * (H_RADIUS_MAX-H_RADIUS_MIN)/N_IT;};
+};
 
 //Program parameters
 
@@ -81,13 +100,13 @@ double c_dist(const CWeight& w, const Pos& p);
 
 double t_match_1(const Pos& local, const TWeight1& w, const Input1& x) ;
 
-double t_match_2(const Pos& local, const TWeight2& w, const Input2& x) ;
+double t_match_2( const Pos& local, const TWeight2& w, const Input2& x) ;
 
 double c_match(const Pos& local, const CWeight& w, const Pos& p);
 
 double m_dist(const Pos& w1,const Pos& w2) ;
 
-double h(const Pos& bmu,const Pos& p);
+double h(const Params& params, const Pos& bmu,const Pos& p);
 
 double merge(const float& beta, const Acts& thal, const Acts& cort, const Pos& p);
 

@@ -59,7 +59,7 @@ template<typename INPUTSAMPLER>
 void def_sequence(xsom::setup::Sequencer& seq,  State_1& map1,  State_2& map2,
   bool& testing, INPUTSAMPLER& input_sampler,
   const std::string& flags, const std::string& date, std::ofstream& input_file, std::string& file_prefix, std::ofstream& bmu_file,
-  Results& res, std::string& figure_prefix, int& iterations, std::string& file_res
+  Results& res, std::string& figure_prefix, int& iterations, std::string& file_res, Params& params
 ){
     seq.interactive(true); // call this after having added menus.
 
@@ -89,7 +89,7 @@ void def_sequence(xsom::setup::Sequencer& seq,  State_1& map1,  State_2& map2,
           seq.__update();
           seq.__();
         seq.__rof();
-        seq.__plot([&flags](){return flags;});
+        //seq.__plot([&flags](){return flags;});
         seq.__step([&map1,&map2,&bmu_file,&res](){
           bmu_file<<map1.bmu<<";"<<map2.bmu<<"\n";
           res.bmu_w1.push_back(map1.tw(map1.bmu));
@@ -106,13 +106,13 @@ void def_sequence(xsom::setup::Sequencer& seq,  State_1& map1,  State_2& map2,
       });
       seq.__for(1000);
       //next input
-        seq.__step([&map1,&map2,&input_sampler,&res,&input_file](){
+        seq.__step([&map1,&map2,&input_sampler,&res](){
           input_sampler();
           map1.next(input_sampler.get().first);
           map2.next(input_sampler.get().second);
           res.inputsx.push_back(input_sampler.get().first);
           res.inputsy.push_back(input_sampler.get().second);
-          input_sampler.save(input_file);
+        //  input_sampler.save(input_file);
               });
               seq.__step([&map1,&map2](){
                     Pos th_bmu1 = map1.compute_bmu_thal();
@@ -125,12 +125,11 @@ void def_sequence(xsom::setup::Sequencer& seq,  State_1& map1,  State_2& map2,
           seq.__update();
           seq.__();
         seq.__rof();
-        seq.__step([&map1,&map2,&bmu_file,&res](){
+        seq.__step([&map1,&map2,&res](){
           res.bmu_w1_closed.push_back(map1.tw(map1.bmu));
           res.bmu_w2_closed.push_back(map2.tw(map2.bmu));
           res.bmu_1.push_back(map1.bmu);
           res.bmu_2.push_back(map2.bmu);
-          bmu_file<<map1.bmu<<";"<<map2.bmu<<"\n";
         });
 
         seq.__();
@@ -142,13 +141,12 @@ void def_sequence(xsom::setup::Sequencer& seq,  State_1& map1,  State_2& map2,
       seq.msg_info(std::to_string(iterations));
     });
     seq.__for(50);
-      seq.__step([&map1,&map2,&input_sampler,&res,&input_file](){
+      seq.__step([&map1,&map2,&input_sampler,&res](){
           input_sampler();
           map1.next(input_sampler.get().first);
           map2.next(input_sampler.get().second);
           res.inputsx.push_back(input_sampler.get().first);
           res.inputsy.push_back(input_sampler.get().second);
-          input_sampler.save(input_file);
               });
       seq.__update();
       seq.__step([&map1,&map2](){
@@ -162,13 +160,13 @@ void def_sequence(xsom::setup::Sequencer& seq,  State_1& map1,  State_2& map2,
         seq.__();
       seq.__rof();
       seq.__learn();
-      seq.__step([&map1,&map2,&input_sampler,&res,&input_file,&date,&file_prefix,&bmu_file,&iterations](){
-        map1.save(file_prefix + "map1_w_"  + date +".data",true);
-        map2.save(file_prefix + "map2_w_"  + date +".data", true);
+      seq.__step([&map1,&map2,&input_sampler,&res,&date,&file_prefix,&iterations,&params](){
+        //map1.save(file_prefix + "map1_w_"  + date +".data",true);
+        //map2.save(file_prefix + "map2_w_"  + date +".data", true);
         res.bmu_w1_learning.push_back(map1.tw(map1.bmu));
         res.bmu_w2_learning.push_back(map2.tw(map2.bmu));
         iterations++;
-        bmu_file<<map1.bmu<<";"<<map2.bmu<<"\n";
+        params. h_radius = H_RADIUS_MAX - iterations * (H_RADIUS_MAX-H_RADIUS_MIN)/N_IT;
       });
       seq.__();
     seq.__rof();
@@ -179,13 +177,12 @@ void def_sequence(xsom::setup::Sequencer& seq,  State_1& map1,  State_2& map2,
       seq.msg_info(std::to_string(iterations));
     });
     seq.__for(50);
-      seq.__step([&map1,&map2,&input_sampler,&res,&input_file](){
+      seq.__step([&map1,&map2,&input_sampler,&res](){
           input_sampler();
           map1.next(input_sampler.get().first);
           map2.next(input_sampler.get().second);
           res.inputsx.push_back(input_sampler.get().first);
           res.inputsy.push_back(input_sampler.get().second);
-          input_sampler.save(input_file);
               });
       seq.__update();
       seq.__step([&map1,&map2](){
@@ -200,13 +197,13 @@ void def_sequence(xsom::setup::Sequencer& seq,  State_1& map1,  State_2& map2,
       seq.__rof();
       seq.__learn();
       seq.__plot([&flags](){return flags;});
-      seq.__step([&map1,&map2,&input_sampler,&res,&input_file,&date,&file_prefix,&bmu_file,&iterations](){
-        map1.save(file_prefix + "map1_w_"  + date +".data",true);
-        map2.save(file_prefix + "map2_w_"  + date +".data", true);
+      seq.__step([&map1,&map2,&input_sampler,&res,&date,&file_prefix,&iterations](){
+      //  map1.save(file_prefix + "map1_w_"  + date +".data",true);
+      //  map2.save(file_prefix + "map2_w_"  + date +".data", true);
         res.bmu_w1_learning.push_back(map1.tw(map1.bmu));
         res.bmu_w2_learning.push_back(map2.tw(map2.bmu));
         iterations++;
-        bmu_file<<map1.bmu<<";"<<map2.bmu<<"\n";
+
       });
       seq.__();
     seq.__rof();
@@ -215,6 +212,7 @@ void def_sequence(xsom::setup::Sequencer& seq,  State_1& map1,  State_2& map2,
     seq.__def("learn_loop");
     seq.__for(20);
       seq.__call("learn_batch");
+      seq.__plot([&flags](){return flags;});
     /*  seq.__step([&res,&iterations](){
         compute_mean_error(std::ref(res), iterations);
       });*/
@@ -269,7 +267,9 @@ int main(int argc, char* argv[]){
   State_1 map1(gen);
   State_2 map2(gen);
 
+  Params params;
 
+  int iterations = 1;
 //File names definition
 
 time_t my_time = time(0);
@@ -300,16 +300,16 @@ map2.next(input_sampler.get().second);
 
 ccmpl::Main m(argc, argv, VIEWER_PREFIX);
 
-auto display = ccmpl::layout(m.hostname, m.port, 16.0, 16.0,{"##","##"},
+auto display = ccmpl::layout(m.hostname, m.port, 16.0, 16.0,{"##","##","##","##"},
                             ccmpl::RGB(1., 1., 1.));
-display.set_ratios({1.,1.},{1.,1.});
+display.set_ratios({2.,2.},{1.,1.,1.,1.});
 
 std::string flags = "" ;
 
 //Generate display set up
 
-//plot_positions(std::ref(flags),std::ref(display),std::ref(map1),std::ref(map2),std::ref(results));
-plot_activity(std::ref(flags),std::ref(display),std::ref(map1),std::ref(map2),std::ref(results));
+plot_positions(std::ref(flags),std::ref(display),std::ref(map1),std::ref(map2),std::ref(results));
+//plot_activity(std::ref(flags),std::ref(display),std::ref(map1),std::ref(map2),std::ref(results));
 
 m.generate(display, true); // true means "use GUI".
 
@@ -321,10 +321,10 @@ auto archi = xsom::setup::network();
 
 //MAP1
 
-auto tl1 = xsom::layer<TWeight1, Pos>(ALPHA,
+auto tl1 = xsom::layer<TWeight1, Pos>(params._alpha(iterations),
             map1.x,
             t_match_1,
-            std::bind(h,                std::ref(map1.bmu), _1),
+            std::bind(h,      std::ref(params),            std::ref(map1.bmu), _1),
             std::bind(&TWeights1::get,   std::ref(map1.tw),  _1),
             std::bind(&Acts::learn,     std::ref(map1.ta),  _1),
             std::bind(&TWeights1::learn, std::ref(map1.tw),  _1));
@@ -332,7 +332,7 @@ auto tl1 = xsom::layer<TWeight1, Pos>(ALPHA,
 auto cl1 = xsom::layer<CWeight, Pos>(ALPHA,
               map2.bmu,
               c_match,
-              std::bind(h,                std::ref(map1.bmu), _1),
+              std::bind(h,     std::ref(params),           std::ref(map1.bmu), _1),
               std::bind(&CWeights::get,   std::ref(map1.cw),  _1),
               std::bind(&Acts::learn,     std::ref(map1.ca),  _1),
               std::bind(&CWeights::learn, std::ref(map1.cw),  _1));
@@ -352,7 +352,7 @@ archi += m1;
 auto tl2 = xsom::layer<TWeight2, Pos>(ALPHA,
               map2.x,
               t_match_2,
-              std::bind(h,                std::ref(map2.bmu), _1),
+              std::bind(h,      std::ref(params),          std::ref(map2.bmu), _1),
               std::bind(&TWeights2::get,   std::ref(map2.tw),  _1),
               std::bind(&Acts::learn,     std::ref(map2.ta),  _1),
               std::bind(&TWeights2::learn, std::ref(map2.tw),  _1));
@@ -360,7 +360,7 @@ auto tl2 = xsom::layer<TWeight2, Pos>(ALPHA,
   auto cl2 = xsom::layer<CWeight, Pos>(ALPHA,
               map1.bmu,
               c_match,
-              std::bind(h,                std::ref(map2.bmu), _1),
+              std::bind(h,          std::ref(params),        std::ref(map2.bmu), _1),
               std::bind(&CWeights::get,   std::ref(map2.cw),  _1),
               std::bind(&Acts::learn,     std::ref(map2.ca),  _1),
               std::bind(&CWeights::learn, std::ref(map2.cw),  _1));
@@ -381,14 +381,14 @@ auto tl2 = xsom::layer<TWeight2, Pos>(ALPHA,
 
 auto seq       = xsom::setup::sequencer(archi, display);
 
-int iterations = 0;
+
 bool showing_updates = false;
 double pos_map1 = 0;
 bool testing = false;
 auto inputs = std::ofstream(input_filename);
 auto bmus = std::ofstream(bmu_filename);
 
-def_sequence<Random_Colormap>(std::ref(seq), std::ref(map1), std::ref(map2), std::ref(testing), std::ref(input_sampler), std::ref(flags) , std::ref(date),std::ref(inputs), std::ref(prefix) , std::ref(bmus), std::ref(results),std::ref(figure_prefix), std::ref(iterations), std::ref(file_res));
+def_sequence<Random_Colormap>(std::ref(seq), std::ref(map1), std::ref(map2), std::ref(testing), std::ref(input_sampler), std::ref(flags) , std::ref(date),std::ref(inputs), std::ref(prefix) , std::ref(bmus), std::ref(results),std::ref(figure_prefix), std::ref(iterations), std::ref(file_res), std::ref(params));
 
 seq.run();
 inputs.close();
