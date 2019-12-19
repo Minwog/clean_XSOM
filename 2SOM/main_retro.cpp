@@ -3,103 +3,20 @@
 #include "../classes/InputSampler.hpp"
 #include <string>
 #include <ctime>
-
-#define FILENAME "../files/inputs_2D_shape1.txt"
-#define TEST_FILENAME "../files/test_inputs_2D_shape1.txt"
-#define N_INPUTS 5000
-#define N_TEST 10000
-#define VIEWER_PREFIX "2_SOM_1D"
-#define PORT_NAME  10000
-#define DAT_PREFIX "../experiences/2SOM_retro/"
-#define BATCH_SIZE 50
+#include "sequence_retro.cpp"
+#include "helpers.hpp"
 
 
-void compute_mean_error(Results& results, int iteration){
-  auto w_1 = results.bmu_w1_learning.begin()+ iteration - 50; //first it is 1
-  auto w_2 = results.bmu_w2_learning.begin()+ iteration - 50;
-  auto in_1 = results.inputsx.begin()+ iteration - 50;
-  auto in_2 = results.inputsy.begin()+ iteration - 50;
-  Pos err_moy = 0;
-  for(int i = 0; i<50; i++){
-    Pos dist = (*w_1 - *in_1)*(*w_1 - *in_1) + (*w_2 - *in_2)*(*w_2 - *in_2);
-    err_moy = err_moy + dist;
-    w_1 ++ ; in_1 ++; w_2 ++; in_2 ++;
-  }
-
-  err_moy = std::sqrt(err_moy)/ 50 ;
-  results.mean_error_batch.push_back(err_moy);
-}
-
-void compute_test_error(Results& results){
-  auto w_1 = results.bmu_w1.begin(); //first it is 1
-  auto w_2 = results.bmu_w2.begin();
-  auto in_1 = results.inputsx.begin();
-  auto in_2 = results.inputsy.begin();
-  Pos err_moy = 0;
-  for(int i = 0; i<results.bmu_w1.size(); i++){
-    Pos dist = (*w_1 - *in_1)*(*w_1 - *in_1) + (*w_2 - *in_2)*(*w_2 - *in_2);
-    err_moy = err_moy + dist;
-    w_1 ++ ; in_1 ++; w_2 ++; in_2 ++;
-  }
-
-  auto clw_1 = results.bmu_w1_closed.begin(); //first it is 1
-  auto clw_2 = results.bmu_w2_closed.begin();
-  auto clin_1 = results.inputsx_closed.begin();
-  auto clin_2 = results.inputsy_closed.begin();
-  Pos err_moy2 = 0;
-  for(int i = 0; i<results.bmu_w1_closed.size(); i++){
-    Pos dist = (*w_1 - *in_1)*(*w_1 - *in_1) + (*w_2 - *in_2)*(*w_2 - *in_2);
-    err_moy2 = err_moy2 + dist;
-    clw_1 ++ ; clin_1 ++; clw_2 ++; clin_2 ++;
-  }
-
-  err_moy2 = std::sqrt(err_moy2)/ results.bmu_w1_closed.size();
-  results.mean_error = err_moy;
-  results.mean_error_closed = err_moy2;
-}
-
-//plot poids des bmus au cours du temps, erreurs, position des bmus,
-void save_res_csv(Results& results,std::string& file_name){
-  std::ofstream f(file_name.c_str());
-  for(auto& p1:results.inputsx) f<<p1<<";";
-  f<<"\n";
-  for(auto& p2:results.inputsy) f<<p2<<";";
-  f<<"\n";
-  for(auto& p1:results.inputsx_closed) f<<p1<<";";
-  f<<"\n";
-  for(auto& p2:results.inputsy_closed) f<<p2<<";";
-  f<<"\n";
-  for(auto& p1:results.inputsx_learn) f<<p1<<";";
-  f<<"\n";
-  for(auto& p2:results.inputsy_learn) f<<p2<<";";
-  f<<"\n";
-  for(auto& p3:results.bmu_w1_learning) f<<p3<<";";
-  f<<"\n";
-  for(auto& p4:results.bmu_w2_learning) f<<p4<<";";
-  f<<"\n";
-  for(auto& p5:results.bmu_w1) f<<p5<<";";
-  f<<"\n";
-  for(auto& p6:results.bmu_w2) f<<p6<<";";
-  f<<"\n";
-  for(auto& p7:results.bmu_w1_closed) f<<p7<<";";
-  f<<"\n";
-  for(auto& p8:results.bmu_w2_closed) f<<p8<<";";
-  f<<"\n";
-  for(auto& p9:results.bmu_1) f<<p9<<";";
-  f<<"\n";
-  for(auto& p10:results.bmu_2) f<<p10<<";";
-  f<<"\n";
-  for(auto& p11:results.mean_error_batch) f<<p11<<";";
-}
-
-//Definition of the sequence. Scenario 1 : learning begin at the same time for both thalamic and cortical weights.
 
 template<typename INPUTSAMPLER>
-void def_sequence_retro(xsom::setup::Sequencer& seq,  State& map1,  State& map2,
+void def_sequence_energy(xsom::setup::Sequencer& seq,  State& map1,  State& map2,
   bool& testing, INPUTSAMPLER& input_sampler,
   const std::string& flags, const std::string& date, std::string& file_prefix,
-  Results& res, std::string& figure_prefix, int& iterations, std::string& file_res, Params& params, std::ofstream& difference_file
+  Results& res, std::string& figure_prefix, int& iterations, std::string& file_res, Params& params, std::ofstream& difference_file, bool& stop
 ){
+    seq.add_menu_item('s',"s","save figure, test loop and quit",[&seq,&stop](){
+    stop = !stop;
+  });
     seq.interactive(true); // call this after having added menus.
 
     seq.__def("test_loop");
@@ -109,7 +26,7 @@ void def_sequence_retro(xsom::setup::Sequencer& seq,  State& map1,  State& map2,
         //input_file<<"test"<<"\n";
       });
 
-      seq.__for(100);
+      seq.__for(1000);
       //next input
         seq.__step([&map1,&map2,&input_sampler,&res](){
           input_sampler();
@@ -128,14 +45,10 @@ void def_sequence_retro(xsom::setup::Sequencer& seq,  State& map1,  State& map2,
         //map1 update, map2 update
         seq.__for(70);
           seq.__update();
-          seq.__step([&map1, &map2,&difference_file](){
+          /*seq.__step([&map1, &map2,&difference_file](){
             difference_file<<map1.bmu<<";"<<map2.bmu <<";";
-          });
-        seq.__rof();
-        seq.__step([&difference_file](){
-        difference_file<<"\n";
-      });
-      //seq.__plot_pdf([&flags](){return flags;},"../experiences/2SOM_retro/act_bothinp");
+          });*/
+          seq.__rof();
         seq.__step([&map1,&map2,&res](){
           //bmu_file<<map1.bmu<<";"<<map2.bmu<<"\n";
           res.bmu_w1.push_back(map1.tw(map1.bmu));
@@ -146,98 +59,20 @@ void def_sequence_retro(xsom::setup::Sequencer& seq,  State& map1,  State& map2,
 
         seq.__();
       seq.__rof();
-      seq.__step([&map2,&seq](){
-        map2.close_thalamic();
-        seq.msg_info("Test closing map2");
-      });
-      seq.__for(100);
-      //next input
-        seq.__step([&map1,&map2,&input_sampler,&res](){
-          input_sampler();
-          map1.next(input_sampler.get().first);
-          map2.next(input_sampler.get().second);
-          res.inputsx_closed.push_back(input_sampler.get().first);
-          res.inputsy_closed.push_back(input_sampler.get().second);
-          //input_sampler.save(input_file);
-              });
-              //on met le bmu thal au milieu
-              seq.__step([&map1,&map2](){
-                Pos th_bmu1 = map1.compute_bmu_thal();
-                //Pos th_bmu2 = map2.compute_bmu_thal();
-                map1.reinit_bmu(th_bmu1);
-                map2.reinit_bmu(0.5);
-              });
-        //map1 update, map2 update
-        seq.__for(70);
-          seq.__update();
-        seq.__rof();
-        //seq.__plot_pdf([&flags](){return flags;},"../experiences/2SOM_retro/act_map2");
-        seq.__step([&map1,&map2,&res](){
-          res.bmu_w1_closed.push_back(map1.tw(map1.bmu));
-          res.bmu_w2_closed.push_back(map2.tw(map2.bmu));
-          //res.bmu_1.push_back(map1.bmu);
-          //res.bmu_2.push_back(map2.bmu);
-          //bmu_file<<map1.bmu<<";"<<map2.bmu<<"\n";
-        });
-
-        seq.__();
-      seq.__rof();
-        seq.__step([&map1,&map2,&seq](){
-        map1.close_thalamic();
-        map2.open_thalamic();
-        seq.msg_info("Test closing map1");
-      });
-      seq.__for(100);
-      //next input
-        seq.__step([&map1,&map2,&input_sampler,&res](){
-          input_sampler();
-          map1.next(input_sampler.get().first);
-          map2.next(input_sampler.get().second);
-          res.inputsx_closed2.push_back(input_sampler.get().first);
-          res.inputsy_closed2.push_back(input_sampler.get().second);
-          //input_sampler.save(input_file);
-              });
-              //on met le bmu thal au milieu
-              seq.__step([&map1,&map2](){
-                Pos th_bmu2= map2.compute_bmu_thal();
-                //Pos th_bmu2 = map2.compute_bmu_thal();
-                map2.reinit_bmu(th_bmu2);
-                map1.reinit_bmu(0.5);
-              });
-        //map1 update, map2 update
-        seq.__for(70);
-          seq.__update();
-        seq.__rof();
-      //  seq.__plot_pdf([&flags](){return flags;},"../experiences/2SOM_retro/act_map1");
-        seq.__step([&map1,&map2,&res](){
-          res.bmu_w1_closed2.push_back(map1.tw(map1.bmu));
-          res.bmu_w2_closed2.push_back(map2.tw(map2.bmu));
-          //res.bmu_1.push_back(map1.bmu);
-          //res.bmu_2.push_back(map2.bmu);
-          //bmu_file<<map1.bmu<<";"<<map2.bmu<<"\n";
-        });
-
-        seq.__();
-      seq.__rof();
     seq.__fed();
 
     seq.__def("learn_batch");
     seq.__step([&seq,&iterations,&params](){
       seq.msg_info(std::to_string(iterations));
-      std::cerr<<params._alpha(iterations)<<std::endl;
-      params.h_radius = H_RADIUS_MAX - iterations * (H_RADIUS_MAX-H_RADIUS_MIN)/N_IT;
+      if(params.h_radius > H_RADIUS_MIN) params.h_radius = H_RADIUS_MAX - iterations * (H_RADIUS_MAX-H_RADIUS_MIN)/N_IT;
     });
     seq.__for(50);
       seq.__step([&map1,&map2,&input_sampler,&res](){
           input_sampler();
           map1.next(input_sampler.get().first);
           map2.next(input_sampler.get().second);
-          res.inputsx_learn.push_back(input_sampler.get().first);
-          res.inputsy_learn.push_back(input_sampler.get().second);
-          //input_sampler.save(input_file);
               });
       seq.__update();
-      //seq.__plot([&flags](){return flags;});
      seq.__step([&map1,&map2](){
         Pos th_bmu1 = map1.compute_bmu_thal();
         Pos th_bmu2 = map2.compute_bmu_thal();
@@ -252,8 +87,8 @@ void def_sequence_retro(xsom::setup::Sequencer& seq,  State& map1,  State& map2,
       //seq.__plot([&flags](){return flags;});
       seq.__learn();
       seq.__step([&map1,&map2,&input_sampler,&res,&date,&file_prefix,&iterations](){
-      //  res.bmu_w1_learning.push_back(map1.tw(map1.bmu));
-      //  res.bmu_w2_learning.push_back(map2.tw(map2.bmu));
+        //res.bmu_w1_learning.push_back(map1.tw(map1.bmu));
+        //res.bmu_w2_learning.push_back(map2.tw(map2.bmu));
         iterations++;
         //bmu_file<<map1.bmu<<";"<<map2.bmu<<"\n";
       });
@@ -261,192 +96,30 @@ void def_sequence_retro(xsom::setup::Sequencer& seq,  State& map1,  State& map2,
     seq.__rof();
     seq.__fed();
 
-    seq.__def("test_batch");
-    seq.__step([&seq,&iterations](){
-      seq.msg_info("test"+std::to_string(iterations));
-    });
-    seq.__for(20);
-      seq.__step([&map1,&map2,&input_sampler,&res](){
-          input_sampler();
-          map1.next(input_sampler.get().first);
-          map2.next(input_sampler.get().second);
-          res.inputsx.push_back(input_sampler.get().first);
-          res.inputsy.push_back(input_sampler.get().second);
-          //input_sampler.save(input_file);
-              });
-      seq.__update();
-      seq.__step([&map1,&map2](){
-        Pos th_bmu1 = map1.compute_bmu_thal();
-        Pos th_bmu2 = map2.compute_bmu_thal();
-        map1.reinit_bmu(th_bmu1);
-        map2.reinit_bmu(th_bmu2);
-      });
-      seq.__for(70);
-        seq.__update();
-        seq.__();
-      seq.__rof();
-      seq.__step([&map1,&map2,&input_sampler,&res,&date,&file_prefix,&iterations](){
-        //map1.save(file_prefix + "map1_w_"  + date +".data",true);
-        //map2.save(file_prefix + "map2_w_"  + date +".data", true);
-        res.bmu_w1_learning.push_back(map1.tw(map1.bmu));
-        res.bmu_w2_learning.push_back(map2.tw(map2.bmu));
-        iterations++;
-        //bmu_file<<map1.bmu<<";"<<map2.bmu<<"\n";
-      });
-      seq.__();
-    seq.__rof();
-    seq.__fed();
 
-    seq.__def("learn_loop");
-    seq.__for((int) N_IT/BATCH_SIZE);
+    seq.__def("learn_loop_while");
+    seq.__if([&stop](){return !stop;});
       seq.__call("learn_batch");
-    /*  seq.__step([&res,&iterations](){
-        compute_mean_error(std::ref(res), iterations);
-      });*/
-      seq.__();
-    seq.__rof();
+      seq.__step([&map1,&map2,&date,&file_prefix](){
+        map1.save(file_prefix + "map1_w_"  + date +".data", true);
+        map2.save(file_prefix + "map2_w_"  + date +".data", true);
+      });
+      seq.__plot([&flags](){return flags;});
+      seq.__step([&seq,&iterations](){seq.msg_info(std::to_string(iterations));});
+    seq.__else();
+    seq.__call("test_loop");
+    seq.__step([&file_res,&res](){
+      save_res_csv(std::ref(res), std::ref(file_res));
+    });
+    seq.__plot_pdf([&flags](){return flags;}, figure_prefix);
+    seq.__step([](){throw xsom::instr::Exit();});
+    seq.__fi();
     seq.__fed();
 
   /* */ seq.__loop();
-            seq.__call("learn_loop");
-            seq.__step([&map1,&map2,&date,&file_prefix](){
-              //map1.save(file_prefix + "map1_w_"  + date +".data",false);
-              //map2.save(file_prefix + "map2_w_"  + date +".data", false);
-            });
-            seq.__step([&input_sampler,&seq](){input_sampler.test_mode=true; seq.msg_info("Test phase 1");});
-            seq.__call("test_loop");
-            seq.__step([&file_res,&res](){
-            //  save_res_csv(std::ref(res), std::ref(file_res));
-            });
-            seq.__plot_pdf([&flags](){return flags;}, figure_prefix );
-
-	  //seq.__step([&seq](){seq.msg_info("saving image");});
-          seq.__step([](){
-            throw xsom::instr::Exit();
-	    });
+            seq.__call("learn_loop_while");
   /* */ seq.__pool();
 }
-
-// DEF SEQUENCE 2 SANS ENREGISTRER
-
-
-/*template<typename INPUTSAMPLER, typename RANDOM_DEVICE>
-void def_sequence_opti(xsom::setup::Sequencer& seq,  State& map1,  State& map2,
-  INPUTSAMPLER& input_sampler, std::string& flags,std::string& date, Params& params,
-  Results& res, std::string& figure_prefix, std::string& file_res, RANDOM_DEVICE& rd, int& iterations){
-
-    seq.interactive(true); // call this after having added menus.
-
-    seq.__def("test_loop");
-      seq.__step([&res](){
-        res.inputsx.clear();
-        res.inputsy.clear();
-        //input_file<<"test"<<"\n";
-      });
-
-      seq.__for(100);
-      //next input
-        seq.__step([&map1,&map2,&input_sampler,&res](){
-          input_sampler();
-          map1.next(input_sampler.get().first);
-          map2.next(input_sampler.get().second);
-          res.inputsx.push_back(input_sampler.get().first);
-          res.inputsy.push_back(input_sampler.get().second);
-          //input_sampler.save(input_file);
-              });
-              seq.__step([&map1,&map2](){
-                Pos th_bmu1 = map1.compute_bmu_thal();
-                Pos th_bmu2 = map2.compute_bmu_thal();
-                map1.reinit_bmu(th_bmu1);
-                map2.reinit_bmu(th_bmu2);
-              });
-        //map1 update, map2 update
-        seq.__for(70);
-          seq.__update();
-          seq.__();
-        seq.__rof();
-        seq.__step([&map1,&map2,&res](){
-          //bmu_file<<map1.bmu<<";"<<map2.bmu<<"\n";
-          res.bmu_w1.push_back(map1.tw(map1.bmu));
-          res.bmu_w2.push_back(map2.tw(map2.bmu));
-          res.bmu_1.push_back(map1.bmu);
-          res.bmu_2.push_back(map2.bmu);
-        });
-
-        seq.__();
-      seq.__rof();
-    seq.__fed();
-
-    seq.__def("learn_step");
-      seq.__step([&map1,&map2,&input_sampler](){
-          input_sampler();
-          map1.next(input_sampler.get().first);
-          map2.next(input_sampler.get().second);
-          //input_sampler.save(input_file);
-              });
-      seq.__update();
-      seq.__step([&map1,&map2](){
-        Pos th_bmu1 = map1.compute_bmu_thal();
-        Pos th_bmu2 = map2.compute_bmu_thal();
-        map1.reinit_bmu(th_bmu1);
-        map2.reinit_bmu(th_bmu2);
-      });
-      seq.__for(70);
-        seq.__update();
-        seq.__();
-        seq.__rof();
-      seq.__learn();
-    seq.__fed();
-
-    seq.__def("unit_loop");
-      seq.__step([&map1,&map2,&rd,&res](){
-          map1.reinit(rd);
-          map2.reinit(rd);
-          res.clear();
-        });
-      seq.__for(5000);
-      seq.__step([&seq,&iterations](){
-        seq.msg_info(std::to_string(iterations));
-        iterations++;
-      });
-      seq.__call("learn_step");
-      seq.__();
-      seq.__rof();
-      seq.__step([&seq](){
-      seq.msg_info("step : test");
-    });
-      seq.__call("test_loop");
-      seq.__step([&res,&params](){
-        compute_test_error(std::ref(res));
-        if(res.mean_error <= params.mean_error){
-          params.set_opt();
-          params.mean_error = res.mean_error;
-        }
-      });
-    seq.__fed();
-
-    seq.__loop();
-        seq.__for(5*5*5);
-          seq.__call("unit_loop");
-          seq.__step([&params](){
-            params.next();
-          });
-          seq.__();
-          seq.__rof();
-          seq.__call("unit_loop");
-          seq.__step([&file_res,&res](){
-            save_res_csv(std::ref(res), std::ref(file_res));
-          });
-          seq.__step([&params,&date](){
-            params.save("params"+date+".csv");
-          });
-          seq.__plot_pdf([&flags](){return flags;}, figure_prefix );
-          seq.__step([](){
-            throw xsom::instr::Exit();
-	    });
-  seq.__pool();
-}*/
-
 int main(int argc, char* argv[]){
 
   if(argc == 1) {
@@ -506,9 +179,9 @@ map2.next(input_sampler.get().second);
 
 ccmpl::Main m(argc, argv, VIEWER_PREFIX);
 
-auto display = ccmpl::layout(m.hostname, m.port, 13.0, 10.0,{"##.","###",".##"},
+auto display = ccmpl::layout(m.hostname, m.port, 13.0, 13.0,{"##","##"},
                             ccmpl::RGB(1., 1., 1.));
-display.set_ratios({1.,1.,1.},{1.,2.,2.});
+display.set_ratios({1.,1.},{1.,1.});
 
 
 
@@ -592,8 +265,9 @@ double pos_map1 = 0;
 bool testing = false;
 auto difference_file = std::ofstream(diff_filename);
 auto bmus = std::ofstream(bmu_filename);
+bool stop = false;
 
-def_sequence_retro<Random_Circle_2D>(std::ref(seq), std::ref(map1), std::ref(map2), std::ref(testing), std::ref(input_sampler), std::ref(flags) , std::ref(date), std::ref(prefix) , std::ref(results),std::ref(figure_prefix), std::ref(iteration), std::ref(file_res),std::ref(params), std::ref(difference_file));
+def_sequence_energy<Random_Circle_2D>(std::ref(seq), std::ref(map1), std::ref(map2), std::ref(testing), std::ref(input_sampler), std::ref(flags) , std::ref(date), std::ref(prefix) , std::ref(results),std::ref(figure_prefix), std::ref(iteration), std::ref(file_res),std::ref(params), std::ref(difference_file), std::ref(stop));
 //def_sequence_opti<Random_Circle_2D,std::mt19937 >(std::ref(seq), std::ref(map1), std::ref(map2), std::ref(input_sampler), std::ref(flags) , std::ref(date),std::ref(params),std::ref(results), std::ref(figure_prefix),std::ref(file_res),std::ref(gen),std::ref(iterations));
 
 seq.run();

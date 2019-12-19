@@ -125,7 +125,7 @@ void plot_positions(std::string& flags,ccmpl::chart::Layout& display,
 
   display++;
 
-  display().title = "bmus weights x, y positions, with both inputs";
+  /*display().title = "bmus weights x, y positions, with both inputs";
   display()   = ccmpl::view2d({0.,1.1}, {0.,1.1}, ccmpl::aspect::fit, ccmpl::span::placeholder);
   display().xtitle  = "Map 1 dimension";
   display().ytitle  = "Map 2 dimension";
@@ -155,7 +155,7 @@ void plot_positions(std::string& flags,ccmpl::chart::Layout& display,
   display()  += ccmpl::dots("color = 'k'",        std::bind(fill_anyline_2,std::ref(results.inputsx_closed2), std::ref(results.inputsy_closed2), _1)); flags += "#";
   display()  += ccmpl::dots("color = 'r'",        std::bind(fill_anyline_2,std::ref(results.bmu_w1_closed2), std::ref(results.bmu_w2_closed2), _1)); flags += "#";
 
-  display++;
+  display++;*/
 
   display().title = "Visualisation in 2D";
   display()   = ccmpl::view2d({0.,1.1}, {0.,1.1}, ccmpl::aspect::equal, ccmpl::span::placeholder);

@@ -23,10 +23,10 @@ using namespace std::placeholders;
 #define MAP_SIZE 500
 #define T_MATCH_SIGMA .5
 #define C_MATCH_SIGMA .5
-#define ALPHA_MIN .2
+#define ALPHA_MIN .05
 #define ALPHA_MAX .3
 #define ALPHA_OUT .1
-#define H_RADIUS_MAX .1
+#define H_RADIUS_MAX .05
 #define H_RADIUS_MIN .05
 #define BETA 0.5
 #define KERNEL_TYPE xsom::tab::fft::KernelType::Gaussian  // We use a Gaussian convolution kernel
@@ -37,7 +37,16 @@ using namespace std::placeholders;
 #define C_MATCH_SIGMA_2 ((C_MATCH_SIGMA)*(C_MATCH_SIGMA))
 #define MEM_SIZE 500
 #define VIT_OUT 0.002
-#define N_IT 500
+#define N_IT 2000
+
+#define FILENAME "../files/inputs_2D_shape1.txt"
+#define TEST_FILENAME "../files/test_inputs_2D_shape1.txt"
+#define N_INPUTS 5000
+#define N_TEST 10000
+#define VIEWER_PREFIX "2_SOM_1D"
+#define PORT_NAME  10000
+#define DAT_PREFIX "../experiences/2SOM_retro/"
+#define BATCH_SIZE 50
 
 
 //Program parameters
@@ -112,7 +121,7 @@ public:
   double opt_beta = beta ; double opt_t_match = t_match_sigma_2 ; double opt_c_match = c_match_sigma_2; double opt_h_rad = h_radius;
   double mean_error = 1;
 
-  double _alpha(int& iteration) const { return ALPHA_MAX - iteration * (ALPHA_MAX - ALPHA_MIN)/N_IT; };
+  double _alpha(int& iteration) const { return std::max(ALPHA_MAX - iteration * (ALPHA_MAX - ALPHA_MIN)/N_IT,ALPHA_MIN); };
   //double _alpha(int& iteration) const { if (iteration < 500) return ALPHA_MAX ; else return ALPHA_MIN; };
   double _t_match_sigma_2() const { return T_MATCH_SIGMA_2;};
   double _c_match_sigma_2() const { return C_MATCH_SIGMA_2;};
