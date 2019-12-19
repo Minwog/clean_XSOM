@@ -9,9 +9,10 @@ pkg_check_modules(XSOM xsom REQUIRED)
 
 add_executable(
     twosom
-    1SOM/State.cpp
-    1SOM/Display.cpp
-    1SOM/main.cpp
+    2SOM/Simple_state.cpp
+    2SOM/Display_retro.cpp
+    2SOM/main_retro.cpp
+    2SOM/helpers.cpp
 )
 
 target_link_libraries (twosom ${XSOM_LIBRARIES})
