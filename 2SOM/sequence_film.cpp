@@ -133,6 +133,9 @@ void def_sequence_film(xsom::setup::Sequencer& seq,  State& map1,  State& map2,
 
   /* */ seq.__loop();
   seq.__call("learn_loop");
+    seq.__step([&file_res,&res](){
+             save_res_csv(std::ref(res), std::ref(file_res));
+            });
           seq.__step([](){
             throw xsom::instr::Exit();
 	    });

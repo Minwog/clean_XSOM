@@ -149,15 +149,15 @@ void plot_positions(std::string& flags,ccmpl::chart::Layout& display,
 
   display().title = "bmu weight prediction";
   display()   = ccmpl::view2d({0.,1.1}, {0.,1.1}, ccmpl::aspect::fit, ccmpl::span::placeholder);
-  display().xtitle  = "\\xi^x";
-  display().ytitle  = "\\omega(p\\star^)";
+  display().xtitle  = "$\\xi^x$";
+  display().ytitle  = "$\\omega(p\\star^x)$";
   //display()  += ccmpl::line("color = 'k'",         std::bind(fill_circle, 0.5, 0.5,0.5, 100, _1)); flags += "#";
   display()  += ccmpl::dots("color = 'k'",        std::bind(fill_anyline_2,std::ref(results.inputsx), std::ref(results.bmu_w1), _1)); flags += "#";
   display ++;
   display().title = "bmu weight prediction";
   display()   = ccmpl::view2d({0.,1.1}, {0.,1.1}, ccmpl::aspect::fit, ccmpl::span::placeholder);
-  display().xtitle  = "\\xi^y";
-  display().ytitle  = "\\omega(p\\star^y)";
+  display().xtitle  = "$\\xi^y$";
+  display().ytitle  = "$\\omega(p\\star^y)$";
   //display()  += ccmpl::line("color = 'k'",         std::bind(fill_circle, 0.5, 0.5,0.5, 100, _1)); flags += "#";
   display()  += ccmpl::dots("color = 'k'",        std::bind(fill_anyline_2,std::ref(results.inputsy), std::ref(results.bmu_w2), _1)); flags += "#";
 
