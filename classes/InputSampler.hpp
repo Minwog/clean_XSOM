@@ -19,7 +19,6 @@ using Point = std::pair<double,double>;
 using Colormap = std::pair<xsom::Point2D<double>, double>;
 using Point3D = std::tuple<double,double,double>;
 
-
 template<typename INPUT>
 class InputSampler{
 
@@ -556,6 +555,8 @@ void save(std::ofstream& file){
 }
 
 };
+
+
 
 class Random_Colormap: public InputSampler<Colormap> {
 
