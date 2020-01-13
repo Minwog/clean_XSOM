@@ -125,7 +125,7 @@ void plot_positions(std::string& flags,ccmpl::chart::Layout& display,
 
   display++;
 
-  /*display().title = "bmus weights x, y positions, with both inputs";
+  display().title = "bmus weights x, y positions, with both inputs";
   display()   = ccmpl::view2d({0.,1.1}, {0.,1.1}, ccmpl::aspect::fit, ccmpl::span::placeholder);
   display().xtitle  = "Map 1 dimension";
   display().ytitle  = "Map 2 dimension";
@@ -146,7 +146,23 @@ void plot_positions(std::string& flags,ccmpl::chart::Layout& display,
   display()  += ccmpl::dots("color = 'r'",        std::bind(fill_anyline_2,std::ref(results.bmu_w1_closed), std::ref(results.bmu_w2_closed), _1)); flags += "#";
 
     display++;
-  display().title = "bmus weights x, y positions without x input";
+
+  display().title = "bmu weight prediction";
+  display()   = ccmpl::view2d({0.,1.1}, {0.,1.1}, ccmpl::aspect::fit, ccmpl::span::placeholder);
+  display().xtitle  = "\\xi^x";
+  display().ytitle  = "\\omega(p\\star^)";
+  //display()  += ccmpl::line("color = 'k'",         std::bind(fill_circle, 0.5, 0.5,0.5, 100, _1)); flags += "#";
+  display()  += ccmpl::dots("color = 'k'",        std::bind(fill_anyline_2,std::ref(results.inputsx), std::ref(results.bmu_w1), _1)); flags += "#";
+  display ++;
+  display().title = "bmu weight prediction";
+  display()   = ccmpl::view2d({0.,1.1}, {0.,1.1}, ccmpl::aspect::fit, ccmpl::span::placeholder);
+  display().xtitle  = "\\xi^y";
+  display().ytitle  = "\\omega(p\\star^y)";
+  //display()  += ccmpl::line("color = 'k'",         std::bind(fill_circle, 0.5, 0.5,0.5, 100, _1)); flags += "#";
+  display()  += ccmpl::dots("color = 'k'",        std::bind(fill_anyline_2,std::ref(results.inputsy), std::ref(results.bmu_w2), _1)); flags += "#";
+
+
+/*  display().title = "bmus weights x, y positions without x input";
   display()   = ccmpl::view2d({0.,1.1}, {0.,1.1}, ccmpl::aspect::fit, ccmpl::span::placeholder);
   display().xtitle  = "Map 1 dimension";
   display().ytitle  = "Map 2 dimension";
@@ -157,7 +173,7 @@ void plot_positions(std::string& flags,ccmpl::chart::Layout& display,
 
   display++;*/
 
-  display().title = "Visualisation in 2D";
+  /*display().title = "Visualisation in 2D";
   display()   = ccmpl::view2d({0.,1.1}, {0.,1.1}, ccmpl::aspect::equal, ccmpl::span::placeholder);
   display().xtitle  = "Map 1 dimension";
   display().ytitle  = "Map 2 dimension";
@@ -170,7 +186,7 @@ void plot_positions(std::string& flags,ccmpl::chart::Layout& display,
   display().xtitle  = "Map 1 dimension";
   display().ytitle  = "Map 2 dimension";
   display()  += ccmpl::line("'k-'",         std::bind(fill_map_2, std::ref(map1), std::ref(map2), _1)); flags += "#";
-  display()  += ccmpl::dots("color='r', s = 20",         std::bind(fill_map_2_dots, std::ref(map1), std::ref(map2), _1)); flags += "#";
+  display()  += ccmpl::dots("color='r', s = 20",         std::bind(fill_map_2_dots, std::ref(map1), std::ref(map2), _1)); flags += "#";*/
 
 /*  display ++;
   display().title = "Error evolution through epochs";

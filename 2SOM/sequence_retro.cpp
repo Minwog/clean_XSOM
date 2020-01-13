@@ -2,9 +2,6 @@
 #include "../classes/InputSampler.hpp"
 #include "helpers.hpp"
 
-
-
-
 template<typename INPUTSAMPLER>
 void def_sequence_retro(xsom::setup::Sequencer& seq,  State& map1,  State& map2,
   bool& testing, INPUTSAMPLER& input_sampler,
@@ -136,7 +133,7 @@ void def_sequence_retro(xsom::setup::Sequencer& seq,  State& map1,  State& map2,
     seq.__step([&seq,&iterations,&params](){
       seq.msg_info(std::to_string(iterations));
       std::cerr<<params._alpha(iterations)<<std::endl;
-      if(params.h_radius > H_RADIUS_MIN) params.h_radius = H_RADIUS_MAX - iterations * (H_RADIUS_MAX-H_RADIUS_MIN)/N_IT;
+    //  if(params.h_radius > H_RADIUS_MIN) params.h_radius = H_RADIUS_MAX - iterations * (H_RADIUS_MAX-H_RADIUS_MIN)/N_IT;
     });
     seq.__for(50);
       seq.__step([&map1,&map2,&input_sampler,&res](){
@@ -148,7 +145,7 @@ void def_sequence_retro(xsom::setup::Sequencer& seq,  State& map1,  State& map2,
           //input_sampler.save(input_file);
               });
       seq.__update();
-      //seq.__plot([&flags](){return flags;});
+      seq.__plot([&flags](){return flags;});
      seq.__step([&map1,&map2](){
         Pos th_bmu1 = map1.compute_bmu_thal();
         Pos th_bmu2 = map2.compute_bmu_thal();

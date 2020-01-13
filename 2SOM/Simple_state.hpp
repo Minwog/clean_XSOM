@@ -26,8 +26,10 @@ using namespace std::placeholders;
 #define ALPHA_MIN .05
 #define ALPHA_MAX .3
 #define ALPHA_OUT .1
-#define H_RADIUS_MAX .05
-#define H_RADIUS_MIN .05
+#define H_RADIUS_T .2
+#define H_RADIUS_C .05
+#define H_RADIUS_T_MIN .05
+#define H_RADIUS_C_MIN .01
 #define BETA 0.5
 #define KERNEL_TYPE xsom::tab::fft::KernelType::Gaussian  // We use a Gaussian convolution kernel
 #define SIGMA_CONV .005                           // This is its standard deviation un Pos units.
@@ -43,10 +45,10 @@ using namespace std::placeholders;
 #define TEST_FILENAME "../files/test_inputs_2D_shape1.txt"
 #define N_INPUTS 5000
 #define N_TEST 10000
-#define VIEWER_PREFIX "2_SOM_1D"
+#define VIEWER_PREFIX "2SOM_sqrt_hmov"
 #define PORT_NAME  10000
 #define DAT_PREFIX "../experiences/2SOM_retro/"
-#define BATCH_SIZE 50
+#define BATCH_SIZE 20
 
 
 //Program parameters
@@ -117,50 +119,17 @@ public:
   double beta = BETA;
   double t_match_sigma_2 = T_MATCH_SIGMA_2;
   double c_match_sigma_2 = C_MATCH_SIGMA_2;
-  double h_radius = H_RADIUS_MAX;
-  double opt_beta = beta ; double opt_t_match = t_match_sigma_2 ; double opt_c_match = c_match_sigma_2; double opt_h_rad = h_radius;
+  double h_radius_t = H_RADIUS_T;
+  double h_radius_c = H_RADIUS_C;
+
   double mean_error = 1;
 
   double _alpha(int& iteration) const { return std::max(ALPHA_MAX - iteration * (ALPHA_MAX - ALPHA_MIN)/N_IT,ALPHA_MIN); };
   //double _alpha(int& iteration) const { if (iteration < 500) return ALPHA_MAX ; else return ALPHA_MIN; };
   double _t_match_sigma_2() const { return T_MATCH_SIGMA_2;};
   double _c_match_sigma_2() const { return C_MATCH_SIGMA_2;};
-  double _h_radius(int& iteration) const{ return H_RADIUS_MAX - iteration * (H_RADIUS_MAX-H_RADIUS_MIN)/N_IT;};
+  //double _h_radius(int& iteration) const{ return H_RADIUS_MAX - iteration * (H_RADIUS_MAX-H_RADIUS_MIN)/N_IT;};
 
-  void save(std::string filename){
-    std::ofstream f(filename.c_str());
-    f <<opt_beta <<";"<<opt_t_match<<";"<<opt_c_match<<";"<<opt_h_rad<<";";
-  }
-
-//load?
-
-//set optimum param
-
-  void set_opt(){
-     opt_beta = beta;
-     opt_t_match = t_match_sigma_2;
-     opt_c_match = c_match_sigma_2;
-     opt_h_rad = h_radius;
-  }
-  //gridsearch
-  void next(){
-    ++ idxh;
-    idxh = idxh % SIZEH;
-    if(idxh == 0){
-      ++ idxt;
-      idxt = idxt % SIZET;
-      if( idxt == 0){
-        ++ idxc;
-        idxc = idxc % SIZEC;
-      }
-    }
-
-    c_match_sigma_2 = c_match_sigma_tab[idxc]*c_match_sigma_tab[idxc];
-    t_match_sigma_2 = t_match_sigma_tab[idxt ]*t_match_sigma_tab[idxt ];
-    h_radius = h_radius_tab[idxh ];
-  }
-
-  //autre optimisation ?
 
 
 };
@@ -177,7 +146,9 @@ double c_match(const Params& params, const Pos& local, const CWeight& w, const P
 
 double m_dist(const Pos& w1,const Pos& w2);
 
-double h( const Params& params, const Pos& bmu,const Pos& p);
+double h_th( const Params& params, const Pos& bmu,const Pos& p);
+
+double h_c( const Params& params, const Pos& bmu,const Pos& p);
 
 double merge(const float& beta, const Acts& thal, const Acts& cort, const Pos& p);
 
